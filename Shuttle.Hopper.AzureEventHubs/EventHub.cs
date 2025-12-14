@@ -277,7 +277,7 @@ public class EventHub : ITransport, IPurgeTransport, IDisposable
     {
         if (!_eventHubOptions.ProcessEvents)
         {
-            await _serviceBusOptions.TransportOperation.InvokeAsync(new(this, "[has-pending]", true), cancellationToken);
+            await _serviceBusOptions.TransportOperation.InvokeAsync(new(this, "[has-pending]", false), cancellationToken);
 
             return true;
         }
