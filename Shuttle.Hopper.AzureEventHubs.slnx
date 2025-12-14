@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="LICENSE" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="Shuttle.Hopper.AzureEventHubs.Tests/Shuttle.Hopper.AzureEventHubs.Tests.csproj" />
+  <Project Path="Shuttle.Hopper.AzureEventHubs/Shuttle.Hopper.AzureEventHubs.csproj" />
+</Solution>

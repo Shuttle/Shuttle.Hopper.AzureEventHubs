@@ -1,0 +1,1 @@
+docker run -d --name eventhubs-emulator --network development --pull always -p 5672:5672 -p 9092:9092 -p 5300:5300 -v "%cd%\Config.json:/Eventhubs_Emulator/ConfigFiles/Config.json" -e BLOB_SERVER=azurite -e METADATA_SERVER=azurite -e ACCEPT_EULA=Y mcr.microsoft.com/azure-messaging/eventhubs-emulator:latest

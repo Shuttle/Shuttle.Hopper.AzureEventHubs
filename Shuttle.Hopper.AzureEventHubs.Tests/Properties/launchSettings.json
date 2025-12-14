@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Shuttle.Hopper.AzureEventHubs.Tests": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
