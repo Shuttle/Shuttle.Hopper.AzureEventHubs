@@ -37,7 +37,7 @@ public static class ServiceCollectionExtensions
                 });
             }
 
-            services.TryAddSingleton<ITransportFactory, EventHubFactory>();
+            services.AddSingleton<ITransportFactory, EventHubFactory>();
 
             return services;
         }
