@@ -3,9 +3,9 @@ using Shuttle.Core.Contract;
 
 namespace Shuttle.Hopper.AzureEventHubs;
 
-public class EventHubFactory(IOptions<ServiceBusOptions> serviceBusOptions, IOptionsMonitor<EventHubOptions> eventHubQueueOptions) : ITransportFactory
+public class EventHubFactory(IOptions<HopperOptions> hopperOptions, IOptionsMonitor<EventHubOptions> eventHubQueueOptions) : ITransportFactory
 {
-    private readonly ServiceBusOptions _serviceBusOptions = Guard.AgainstNull(Guard.AgainstNull(serviceBusOptions).Value);
+    private readonly HopperOptions _hopperOptions = Guard.AgainstNull(Guard.AgainstNull(hopperOptions).Value);
     private readonly IOptionsMonitor<EventHubOptions> _eventHubQueueOptions = Guard.AgainstNull(eventHubQueueOptions);
 
     public string Scheme => "azureeh";
@@ -20,6 +20,6 @@ public class EventHubFactory(IOptions<ServiceBusOptions> serviceBusOptions, IOpt
             throw new InvalidOperationException(string.Format(Hopper.Resources.TransportConfigurationNameException, transportUri.ConfigurationName));
         }
 
-        return Task.FromResult<ITransport>(new EventHub(_serviceBusOptions, eventHubQueueOptions, transportUri));
+        return Task.FromResult<ITransport>(new EventHub(_hopperOptions, eventHubQueueOptions, transportUri));
     }
 }

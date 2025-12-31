@@ -1,17 +1,16 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using Shuttle.Core.Contract;
 
 namespace Shuttle.Hopper.AzureEventHubs;
 
-public static class ServiceCollectionExtensions
+public static class HopperBuilderExtensions
 {
-    extension(IServiceCollection services)
+    extension(HopperBuilder hopperBuilder)
     {
-        public IServiceCollection AddAzureEventHubs(Action<EventHubBuilder>? builder = null)
+        public IServiceCollection UseAzureEventHubs(Action<EventHubBuilder>? builder = null)
         {
-            var eventHubQueueBuilder = new EventHubBuilder(Guard.AgainstNull(services));
+            var services = hopperBuilder.Services;
+            var eventHubQueueBuilder = new EventHubBuilder(services);
 
             builder?.Invoke(eventHubQueueBuilder);
 

@@ -16,28 +16,31 @@ public class AzureEventHubsConfiguration
 
         services.AddSingleton<IConfiguration>(configuration);
 
-        services.AddAzureEventHubs(builder =>
+        services.AddHopper(hopperBuilder =>
         {
-            var eventHubQueueOptions = new EventHubOptions
+            hopperBuilder.UseAzureEventHubs(builder =>
             {
-                ConnectionString = "Endpoint=sb://localhost;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;",
-                BlobStorageConnectionString = "UseDevelopmentStorage=true",
-                ProcessorClient = new()
+                var eventHubQueueOptions = new EventHubOptions
                 {
-                    PrefetchCount = 100
-                },
-                ProcessEvents = true,
-                ConsumerGroup = "$Default",
-                BlobContainerName = "eh-shuttle-hopper",
-                OperationTimeout = TimeSpan.FromSeconds(5),
-                ConsumeTimeout = TimeSpan.FromSeconds(15),
-                DefaultStartingPosition = EventPosition.Latest,
-                CheckpointInterval = 5
-            };
+                    ConnectionString = "Endpoint=sb://localhost;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;",
+                    BlobStorageConnectionString = "UseDevelopmentStorage=true",
+                    ProcessorClient = new()
+                    {
+                        PrefetchCount = 100
+                    },
+                    ProcessEvents = true,
+                    ConsumerGroup = "$Default",
+                    BlobContainerName = "eh-shuttle-hopper",
+                    OperationTimeout = TimeSpan.FromSeconds(5),
+                    ConsumeTimeout = TimeSpan.FromSeconds(15),
+                    DefaultStartingPosition = EventPosition.Latest,
+                    CheckpointInterval = 5
+                };
 
-            configuration.GetSection($"{EventHubOptions.SectionName}:azure").Bind(eventHubQueueOptions);
+                configuration.GetSection($"{EventHubOptions.SectionName}:azure").Bind(eventHubQueueOptions);
 
-            builder.AddOptions("azure", eventHubQueueOptions);
+                builder.AddOptions("azure", eventHubQueueOptions);
+            });
         });
 
         return services;
