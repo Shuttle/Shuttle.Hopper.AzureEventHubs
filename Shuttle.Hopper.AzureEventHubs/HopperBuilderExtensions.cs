@@ -7,7 +7,7 @@ public static class HopperBuilderExtensions
 {
     extension(HopperBuilder hopperBuilder)
     {
-        public IServiceCollection UseAzureEventHubs(Action<EventHubBuilder>? builder = null)
+        public HopperBuilder UseAzureEventHubs(Action<EventHubBuilder>? builder = null)
         {
             var services = hopperBuilder.Services;
             var eventHubQueueBuilder = new EventHubBuilder(services);
@@ -38,7 +38,7 @@ public static class HopperBuilderExtensions
 
             services.AddSingleton<ITransportFactory, EventHubFactory>();
 
-            return services;
+            return hopperBuilder;
         }
     }
 }
