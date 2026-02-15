@@ -4,16 +4,20 @@ using Azure.Messaging.EventHubs.Primitives;
 using Azure.Messaging.EventHubs.Processor;
 using Azure.Messaging.EventHubs.Producer;
 using Azure.Storage.Blobs;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Shuttle.Core.Contract;
 using Shuttle.Core.Streams;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text;
+using Shuttle.Hopper;
 
 namespace Shuttle.Hopper.AzureEventHubs;
 
 public class EventHub : ITransport, IPurgeTransport, IDisposable
 {
+    private readonly ILogger<EventHub> _logger;
     private readonly HopperOptions _hopperOptions;
     private readonly TransportOperationEventArgs _acknowledgeStartingEventArgs;
     private readonly TransportOperationEventArgs _processEventHandlerOperationMessageReceivedEventArgs;
@@ -33,8 +37,9 @@ public class EventHub : ITransport, IPurgeTransport, IDisposable
     private bool _disposed;
     private bool _started;
 
-    public EventHub(HopperOptions hopperOptions, EventHubOptions eventHubOptions, TransportUri uri)
+    public EventHub(HopperOptions hopperOptions, EventHubOptions eventHubOptions, TransportUri uri, ILogger<EventHub>? logger = null)
     {
+        _logger = logger ?? NullLogger<EventHub>.Instance;
         _hopperOptions = Guard.AgainstNull(hopperOptions);
         _eventHubOptions = Guard.AgainstNull(eventHubOptions);
 
@@ -137,6 +142,8 @@ public class EventHub : ITransport, IPurgeTransport, IDisposable
             _lock.Release();
         }
 
+        LogMessage.MessageAcknowledged(_logger, Uri.Uri.Scheme, Uri.TransportName);
+
         await _hopperOptions.TransportOperation.InvokeAsync(new(this, "[acknowledge/cancelled]"), cancellationToken);
     }
 
@@ -188,6 +195,8 @@ public class EventHub : ITransport, IPurgeTransport, IDisposable
             _lock.Release();
         }
 
+        LogMessage.MessageEnqueued(_logger, Uri.Uri.Scheme, Uri.TransportName, transportMessage.MessageType, transportMessage.MessageId);
+
         await _hopperOptions.MessageSent.InvokeAsync(new(this, transportMessage, stream), cancellationToken);
     }
 
@@ -217,6 +226,8 @@ public class EventHub : ITransport, IPurgeTransport, IDisposable
 
         if (receivedMessage != null)
         {
+            LogMessage.MessageReceived(_logger, Uri.Uri.Scheme, Uri.TransportName);
+
             await _hopperOptions.MessageReceived.InvokeAsync(new(this, receivedMessage), cancellationToken);
         }
 
@@ -239,10 +250,14 @@ public class EventHub : ITransport, IPurgeTransport, IDisposable
     {
         if (!_eventHubOptions.ProcessEvents)
         {
+            LogMessage.Operation(_logger, Uri.Uri.Scheme, Uri.TransportName, "[has-pending]");
+
             await _hopperOptions.TransportOperation.InvokeAsync(new(this, "[has-pending]", false), cancellationToken);
 
             return true;
         }
+
+        LogMessage.Operation(_logger, Uri.Uri.Scheme, Uri.TransportName, "[has-pending/starting]");
 
         await _hopperOptions.TransportOperation.InvokeAsync(new(this, "[has-pending/starting]"), cancellationToken);
 
@@ -261,6 +276,8 @@ public class EventHub : ITransport, IPurgeTransport, IDisposable
             _lock.Release();
         }
 
+        LogMessage.Operation(_logger, Uri.Uri.Scheme, Uri.TransportName, "[has-pending]");
+
         await _hopperOptions.TransportOperation.InvokeAsync(new(this, "[has-pending]", result), cancellationToken);
 
         return result;
@@ -275,11 +292,15 @@ public class EventHub : ITransport, IPurgeTransport, IDisposable
     {
         if (args.HasEvent)
         {
+            LogMessage.Operation(_logger, Uri.Uri.Scheme, Uri.TransportName, "[process-event-handler/message-received]");
+
             _receivedMessages.Enqueue(new(new MemoryStream(Convert.FromBase64String(Encoding.UTF8.GetString(args.Data.Body.ToArray()))), args));
             await _hopperOptions.TransportOperation.InvokeAsync(_processEventHandlerOperationMessageReceivedEventArgs);
         }
         else
         {
+            LogMessage.Operation(_logger, Uri.Uri.Scheme, Uri.TransportName, "[process-event-handler/no-message-received]");
+
             await _hopperOptions.TransportOperation.InvokeAsync(_processEventHandlerOperationNoMessageReceivedEventArgs);
         }
 
@@ -288,6 +309,8 @@ public class EventHub : ITransport, IPurgeTransport, IDisposable
 
     public async Task PurgeAsync(CancellationToken cancellationToken = default)
     {
+        LogMessage.Operation(_logger, Uri.Uri.Scheme, Uri.TransportName, "[purge/starting]");
+
         await _hopperOptions.TransportOperation.InvokeAsync(new(this, "[purge/starting]"), cancellationToken);
 
         await _lock.WaitAsync(CancellationToken.None).ConfigureAwait(false);
@@ -318,6 +341,8 @@ public class EventHub : ITransport, IPurgeTransport, IDisposable
             _lock.Release();
         }
 
+        LogMessage.Operation(_logger, Uri.Uri.Scheme, Uri.TransportName, "[purge/completed]");
+
         await _hopperOptions.TransportOperation.InvokeAsync(new(this, "[purge/completed]"), cancellationToken);
     }
 
@@ -338,6 +363,8 @@ public class EventHub : ITransport, IPurgeTransport, IDisposable
         {
             _lock.Release();
         }
+
+        LogMessage.MessageReleased(_logger, Uri.Uri.Scheme, Uri.TransportName);
 
         await _hopperOptions.MessageReleased.InvokeAsync(new(this, acknowledgementToken), cancellationToken);
     }

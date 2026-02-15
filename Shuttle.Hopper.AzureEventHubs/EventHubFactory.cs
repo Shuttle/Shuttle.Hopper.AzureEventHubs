@@ -1,9 +1,10 @@
 ﻿using Microsoft.Extensions.Options;
 using Shuttle.Core.Contract;
+using Microsoft.Extensions.Logging;
 
 namespace Shuttle.Hopper.AzureEventHubs;
 
-public class EventHubFactory(IOptions<HopperOptions> hopperOptions, IOptionsMonitor<EventHubOptions> eventHubQueueOptions) : ITransportFactory
+public class EventHubFactory(IOptions<HopperOptions> hopperOptions, IOptionsMonitor<EventHubOptions> eventHubQueueOptions, ILogger<EventHub>? logger = null) : ITransportFactory
 {
     private readonly HopperOptions _hopperOptions = Guard.AgainstNull(Guard.AgainstNull(hopperOptions).Value);
     private readonly IOptionsMonitor<EventHubOptions> _eventHubQueueOptions = Guard.AgainstNull(eventHubQueueOptions);
@@ -20,6 +21,6 @@ public class EventHubFactory(IOptions<HopperOptions> hopperOptions, IOptionsMoni
             throw new InvalidOperationException(string.Format(Hopper.Resources.TransportConfigurationNameException, transportUri.ConfigurationName));
         }
 
-        return Task.FromResult<ITransport>(new EventHub(_hopperOptions, eventHubQueueOptions, transportUri));
+        return Task.FromResult<ITransport>(new EventHub(_hopperOptions, eventHubQueueOptions, transportUri, logger));
     }
 }
