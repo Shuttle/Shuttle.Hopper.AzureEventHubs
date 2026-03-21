@@ -4,7 +4,7 @@
 
 You can make use of hte [Event Hubs emulator](https://learn.microsoft.com/en-us/azure/event-hubs/test-locally-with-event-hub-emulator?tabs=docker-linux-container%2Cusing-kafka) to develop locally.
 
-See the `eventhubs-emulator.cmd` file for the Docker command to create the instance, which requires a network called `development` as well as [Azurite](https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite) running within the same network.
+See the `eventhubs-emulator.cmd` file for the Docker command to create the instance, which requires a network called `development` as well as [Azurite](https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite) running within the same network.  Since the 'Config.json' file is mapped, the docker command should be executed from within the `Shuttle.Hopper.AzureEventHubs.Tests` folder.
 
 The `Config.json` file conain the definition for these event hubs:
 
