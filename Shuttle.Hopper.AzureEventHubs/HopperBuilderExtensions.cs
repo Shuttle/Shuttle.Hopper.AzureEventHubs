@@ -10,29 +10,17 @@ public static class HopperBuilderExtensions
         public HopperBuilder UseAzureEventHubs(Action<EventHubBuilder>? builder = null)
         {
             var services = hopperBuilder.Services;
-            var eventHubQueueBuilder = new EventHubBuilder(services);
+            var eventHubQueueBuilder = new EventHubBuilder();
 
             builder?.Invoke(eventHubQueueBuilder);
 
             services.AddSingleton<IValidateOptions<EventHubOptions>, EventHubOptionsValidator>();
 
-            foreach (var pair in eventHubQueueBuilder.EventHubQueueOptions)
+            foreach (var pair in eventHubQueueBuilder.EventHubQueueConfigureOptions)
             {
                 services.AddOptions<EventHubOptions>(pair.Key).Configure(options =>
                 {
-                    options.BlobClient = pair.Value.BlobClient;
-                    options.ProducerClient = pair.Value.ProducerClient;
-                    options.ProcessorClient = pair.Value.ProcessorClient;
-
-                    options.ConnectionString = pair.Value.ConnectionString;
-                    options.ProcessEvents = pair.Value.ProcessEvents;
-                    options.BlobStorageConnectionString = pair.Value.BlobStorageConnectionString;
-                    options.BlobContainerName = pair.Value.BlobContainerName;
-                    options.ConsumerGroup = pair.Value.ConsumerGroup;
-                    options.OperationTimeout = pair.Value.OperationTimeout;
-                    options.ConsumeTimeout = pair.Value.ConsumeTimeout;
-                    options.DefaultStartingPosition = pair.Value.DefaultStartingPosition;
-                    options.CheckpointInterval = pair.Value.CheckpointInterval;
+                    pair.Value(options);
                 });
             }
 

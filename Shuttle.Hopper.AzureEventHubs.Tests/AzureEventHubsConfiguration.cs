@@ -1,8 +1,6 @@
-﻿using Azure.Messaging.EventHubs;
-using Azure.Messaging.EventHubs.Consumer;
+﻿using Azure.Messaging.EventHubs.Consumer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Shuttle.Core.Contract;
 
 namespace Shuttle.Hopper.AzureEventHubs.Tests;
 
@@ -16,32 +14,23 @@ public class AzureEventHubsConfiguration
 
         services.AddSingleton<IConfiguration>(configuration);
 
-        services.AddHopper(hopperBuilder =>
-        {
-            hopperBuilder.UseAzureEventHubs(builder =>
+        services.AddHopper()
+            .UseAzureEventHubs(builder =>
             {
-                var eventHubQueueOptions = new EventHubOptions
+                builder.Configure("azure", options =>
                 {
-                    ConnectionString = "Endpoint=sb://localhost;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;",
-                    BlobStorageConnectionString = "UseDevelopmentStorage=true",
-                    ProcessorClient = new()
-                    {
-                        PrefetchCount = 100
-                    },
-                    ProcessEvents = true,
-                    ConsumerGroup = "$Default",
-                    BlobContainerName = "eh-shuttle-hopper",
-                    OperationTimeout = TimeSpan.FromSeconds(5),
-                    ConsumeTimeout = TimeSpan.FromSeconds(15),
-                    DefaultStartingPosition = EventPosition.Latest,
-                    CheckpointInterval = 5
-                };
-
-                configuration.GetSection($"{EventHubOptions.SectionName}:azure").Bind(eventHubQueueOptions);
-
-                builder.AddOptions("azure", eventHubQueueOptions);
+                    options.ConnectionString = "Endpoint=sb://localhost;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;";
+                    options.BlobStorageConnectionString = "UseDevelopmentStorage=true";
+                    options.ProcessorClient = new() { PrefetchCount = 100 };
+                    options.ProcessEvents = true;
+                    options.ConsumerGroup = "$Default";
+                    options.BlobContainerName = "eh-shuttle-hopper";
+                    options.OperationTimeout = TimeSpan.FromSeconds(5);
+                    options.ConsumeTimeout = TimeSpan.FromSeconds(15);
+                    options.DefaultStartingPosition = EventPosition.Latest;
+                    options.CheckpointInterval = 5;
+                });
             });
-        });
 
         return services;
     }

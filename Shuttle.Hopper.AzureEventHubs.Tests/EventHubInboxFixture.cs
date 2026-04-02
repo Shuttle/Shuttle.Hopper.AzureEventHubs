@@ -11,7 +11,7 @@ public class EventHubInboxFixture : InboxFixture
     [TestCase(false, false)]
     public async Task Should_be_able_handle_errors_async(bool hasErrorQueue, bool isTransactionalEndpoint)
     {
-        await TestInboxErrorAsync(AzureEventHubsConfiguration.GetServiceCollection(), "azureeh://azure/{0}", hasErrorQueue, isTransactionalEndpoint);
+        await TestInboxErrorAsync(AzureEventHubsConfiguration.GetServiceCollection(), "azureeh://azure/{0}", hasErrorQueue, isTransactionalEndpoint, TimeSpan.FromMinutes(5));
     }
 
     [TestCase(100, true)]

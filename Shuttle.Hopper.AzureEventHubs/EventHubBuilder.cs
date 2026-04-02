@@ -3,20 +3,17 @@ using Shuttle.Core.Contract;
 
 namespace Shuttle.Hopper.AzureEventHubs;
 
-public class EventHubBuilder(IServiceCollection services)
+public class EventHubBuilder
 {
-    internal readonly Dictionary<string, EventHubOptions> EventHubQueueOptions = new();
+    internal readonly Dictionary<string, Action<EventHubOptions>> EventHubQueueConfigureOptions = new();
 
-    public IServiceCollection Services { get; } = Guard.AgainstNull(services);
-
-    public EventHubBuilder AddOptions(string name, EventHubOptions eventHubOptions)
+    public EventHubBuilder Configure(string name, Action<EventHubOptions> configureOptions)
     {
         Guard.AgainstEmpty(name);
-        Guard.AgainstNull(eventHubOptions);
+        Guard.AgainstNull(configureOptions);
 
-        EventHubQueueOptions.Remove(name);
-
-        EventHubQueueOptions.Add(name, eventHubOptions);
+        EventHubQueueConfigureOptions.Remove(name);
+        EventHubQueueConfigureOptions.Add(name, configureOptions);
 
         return this;
     }
