@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
-using Shuttle.Core.Contract;
+using Shuttle.Contract;
 using Microsoft.Extensions.Logging;
 
 namespace Shuttle.Hopper.AzureEventHubs;

@@ -15,7 +15,7 @@
   <ItemGroup>
     <PackageReference Include="Azure.Messaging.EventHubs" Version="5.12.2" />
     <PackageReference Include="Azure.Messaging.EventHubs.Processor" Version="5.12.2" />
-    <ProjectReference Include="..\..\Shuttle.Hopper\Shuttle.Hopper\Shuttle.Hopper.csproj" />
+    <PackageReference Include="Shuttle.Hopper" Version="21.0.1-rc3" />
   </ItemGroup>
 
   <ItemGroup>

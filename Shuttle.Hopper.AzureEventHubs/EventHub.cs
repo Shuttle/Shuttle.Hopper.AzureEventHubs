@@ -6,12 +6,12 @@ using Azure.Messaging.EventHubs.Producer;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Shuttle.Core.Contract;
-using Shuttle.Core.Streams;
+using Shuttle.Contract;
+using Shuttle.Streams;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text;
-using Shuttle.Hopper;
+using Shuttle.Pipelines;
 
 namespace Shuttle.Hopper.AzureEventHubs;
 
@@ -174,10 +174,12 @@ public class EventHub : ITransport, IPurgeTransport, IDisposable
         }
     }
 
-    public async Task SendAsync(TransportMessage transportMessage, Stream stream, CancellationToken cancellationToken = default)
+    public async Task SendAsync(Stream stream, IState state, CancellationToken cancellationToken = default)
     {
-        Guard.AgainstNull(transportMessage);
-        Guard.AgainstNull(stream);
+        ArgumentNullException.ThrowIfNull(stream);
+        ArgumentNullException.ThrowIfNull(state);
+
+        var transportMessage = Guard.AgainstNull(state.GetTransportMessage());
 
         await _lock.WaitAsync(CancellationToken.None).ConfigureAwait(false);
 

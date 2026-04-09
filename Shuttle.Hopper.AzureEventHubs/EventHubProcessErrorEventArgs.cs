@@ -1,5 +1,5 @@
 ﻿using Azure.Messaging.EventHubs.Processor;
-using Shuttle.Core.Contract;
+using Shuttle.Contract;
 
 namespace Shuttle.Hopper.AzureEventHubs;
 
