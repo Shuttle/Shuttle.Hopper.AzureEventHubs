@@ -10,20 +10,10 @@ public static class HopperBuilderExtensions
         public HopperBuilder UseAzureEventHubs(Action<EventHubBuilder>? builder = null)
         {
             var services = hopperBuilder.Services;
-            var eventHubQueueBuilder = new EventHubBuilder();
 
-            builder?.Invoke(eventHubQueueBuilder);
+            builder?.Invoke(new(services));
 
             services.AddSingleton<IValidateOptions<EventHubOptions>, EventHubOptionsValidator>();
-
-            foreach (var pair in eventHubQueueBuilder.EventHubQueueConfigureOptions)
-            {
-                services.AddOptions<EventHubOptions>(pair.Key).Configure(options =>
-                {
-                    pair.Value(options);
-                });
-            }
-
             services.AddSingleton<ITransportFactory, EventHubFactory>();
 
             return hopperBuilder;
