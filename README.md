@@ -17,26 +17,24 @@ services.AddHopper(builder =>
 {
     builder.UseAzureEventHubs(eventHubBuilder =>
     {
-        var eventHubOptions = new EventHubOptions
+        eventHubBuilder.Configure("azure", eventHubOptions => 
         {
-            ConnectionString = "Endpoint=sb://{hub-namespace}.servicebus.windows.net/;SharedAccessKeyName={key-name};SharedAccessKey={key};EntityPath={hub-name}",
-            ProcessEvents = true,
-            ConsumerGroup = "$Default",
-            BlobStorageConnectionString = "{BlobStorageConnectionString}",
-            BlobContainerName = "{BlobContainerName}",
-            OperationTimeout = TimeSpan.FromSeconds(30),
-            ConsumeTimeout = TimeSpan.FromSeconds(30),
-            DefaultStartingPosition = EventPosition.Latest,
-            CheckpointInterval = 1
-        };
+            eventHubOptions.ConnectionString = "Endpoint=sb://{hub-namespace}.servicebus.windows.net/;SharedAccessKeyName={key-name};SharedAccessKey={key};EntityPath={hub-name}";
+            eventHubOptions.ProcessEvents = true;
+            eventHubOptions.ConsumerGroup = "$Default";
+            eventHubOptions.BlobStorageConnectionString = "{BlobStorageConnectionString}";
+            eventHubOptions.BlobContainerName = "{BlobContainerName}";
+            eventHubOptions.OperationTimeout = TimeSpan.FromSeconds(30);
+            eventHubOptions.ConsumeTimeout = TimeSpan.FromSeconds(30);
+            eventHubOptions.DefaultStartingPosition = EventPosition.Latest;
+            eventHubOptions.CheckpointInterval = 1;
 
-        eventHubOptions.ProcessError.Register(async args =>
-        {
-            Console.WriteLine($"[error] : {args.Exception.Message}");
-            await Task.CompletedTask;
+            eventHubOptions.ProcessError.Register(async args =>
+            {
+                Console.WriteLine($"[error] : {args.Exception.Message}");
+                await Task.CompletedTask;
+            });
         });
-
-        eventHubBuilder.AddOptions("azure", eventHubOptions);
     });
 });
 ```
@@ -63,7 +61,7 @@ The default JSON settings structure is as follows:
 }
 ```
 
-## Options
+## `EventHubOptions`
 
 | Segment / Argument | Default | Description |
 | --- | --- | --- | 
@@ -77,3 +75,7 @@ The default JSON settings structure is as follows:
 | `DefaultStartingPosition` | `Latest` | The default starting position to use when no checkpoint exists. |
 | `CheckpointInterval` | `1` | The number of events to process before performing a checkpoint. |
 | `ClientIdentifier` | | A unique identifier for the client. |
+| `BlobClient` | | The `BlobClientOptions` used to configure the underlying `BlobContainerClient`. |
+| `ProcessorClient` | | The `EventProcessorClientOptions` used to configure the underlying `EventProcessorClient`. |
+| `ProducerClient` | | The `EventHubProducerClientOptions` used to configure the underlying `EventHubProducerClient`. |
+| `ProcessError` | | The `AsyncEvent<EventHubProcessErrorEventArgs>` triggered when an error occurs during event processing. |
