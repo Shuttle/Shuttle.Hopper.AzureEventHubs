@@ -13,30 +13,29 @@ dotnet add package Shuttle.Hopper.AzureEventHubs
 The URI structure is `azureeh://configuration-name/hub-name`.
 
 ```c#
-services.AddHopper(builder =>
-{
-    builder.UseAzureEventHubs(eventHubBuilder =>
+services.AddHopper()
+    .UseAzureEventHubs(builder =>
     {
-        eventHubBuilder.Configure("azure", eventHubOptions => 
+        builder.Configure("azure", options => 
         {
-            eventHubOptions.ConnectionString = "Endpoint=sb://{hub-namespace}.servicebus.windows.net/;SharedAccessKeyName={key-name};SharedAccessKey={key};EntityPath={hub-name}";
-            eventHubOptions.ProcessEvents = true;
-            eventHubOptions.ConsumerGroup = "$Default";
-            eventHubOptions.BlobStorageConnectionString = "{BlobStorageConnectionString}";
-            eventHubOptions.BlobContainerName = "{BlobContainerName}";
-            eventHubOptions.OperationTimeout = TimeSpan.FromSeconds(30);
-            eventHubOptions.ConsumeTimeout = TimeSpan.FromSeconds(30);
-            eventHubOptions.DefaultStartingPosition = EventPosition.Latest;
-            eventHubOptions.CheckpointInterval = 1;
+            options.ConnectionString = "Endpoint=sb://{hub-namespace}.servicebus.windows.net/;SharedAccessKeyName={key-name};SharedAccessKey={key};EntityPath={hub-name}";
+            options.BlobStorageConnectionString = "{BlobStorageConnectionString}";
+            options.ProcessorClient = new() { PrefetchCount = 100 };
+            options.ProcessEvents = true;
+            options.ConsumerGroup = "$Default";
+            options.BlobContainerName = "{BlobContainerName}";
+            options.OperationTimeout = TimeSpan.FromSeconds(30);
+            options.ConsumeTimeout = TimeSpan.FromSeconds(30);
+            options.DefaultStartingPosition = EventPosition.Latest;
+            options.CheckpointInterval = 1;
 
-            eventHubOptions.ProcessError.Register(async args =>
+            options.ProcessError.Register(async args =>
             {
                 Console.WriteLine($"[error] : {args.Exception.Message}");
                 await Task.CompletedTask;
             });
         });
     });
-});
 ```
 
 The default JSON settings structure is as follows:
