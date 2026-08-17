@@ -111,7 +111,7 @@ public class EventHub : ITransport, IPurgeTransport, IDisposable
         }
     }
 
-    public async Task AcknowledgeAsync(object acknowledgementToken, CancellationToken cancellationToken = default)
+    public async Task AcknowledgeAsync(object acknowledgementToken, IPipeline pipeline, CancellationToken cancellationToken = default)
     {
         if (Guard.AgainstNull(acknowledgementToken) is not ProcessEventArgs args)
         {
@@ -174,12 +174,12 @@ public class EventHub : ITransport, IPurgeTransport, IDisposable
         }
     }
 
-    public async Task SendAsync(Stream stream, IState state, CancellationToken cancellationToken = default)
+    public async Task SendAsync(Stream stream, IPipeline pipeline, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(stream);
-        ArgumentNullException.ThrowIfNull(state);
+        ArgumentNullException.ThrowIfNull(pipeline);
 
-        var transportMessage = Guard.AgainstNull(state.GetTransportMessage());
+        var transportMessage = Guard.AgainstNull(pipeline.State.GetTransportMessage());
 
         await _lock.WaitAsync(CancellationToken.None).ConfigureAwait(false);
 
@@ -199,12 +199,12 @@ public class EventHub : ITransport, IPurgeTransport, IDisposable
 
         LogMessage.MessageEnqueued(_logger, Uri.Uri.Scheme, Uri.TransportName, transportMessage.MessageType, transportMessage.MessageId);
 
-        await _hopperOptions.MessageSent.InvokeAsync(new(this, transportMessage, stream), cancellationToken);
+        await _hopperOptions.MessageSent.InvokeAsync(new(this, stream, pipeline), cancellationToken);
     }
 
     public TransportType Type => TransportType.Stream;
 
-    public async Task<ReceivedMessage?> ReceiveAsync(CancellationToken cancellationToken = default)
+    public async Task<ReceivedMessage?> ReceiveAsync(IPipeline pipeline, CancellationToken cancellationToken = default)
     {
         if (!_eventHubOptions.ProcessEvents)
         {
@@ -230,7 +230,7 @@ public class EventHub : ITransport, IPurgeTransport, IDisposable
         {
             LogMessage.MessageReceived(_logger, Uri.Uri.Scheme, Uri.TransportName);
 
-            await _hopperOptions.MessageReceived.InvokeAsync(new(this, receivedMessage), cancellationToken);
+            await _hopperOptions.MessageReceived.InvokeAsync(new(this, receivedMessage, pipeline), cancellationToken);
         }
 
         return receivedMessage;
@@ -348,7 +348,7 @@ public class EventHub : ITransport, IPurgeTransport, IDisposable
         await _hopperOptions.TransportOperation.InvokeAsync(new(this, "[purge/completed]"), cancellationToken);
     }
 
-    public async Task ReleaseAsync(object acknowledgementToken, CancellationToken cancellationToken = default)
+    public async Task ReleaseAsync(object acknowledgementToken, IPipeline pipeline, CancellationToken cancellationToken = default)
     {
         if (Guard.AgainstNull(acknowledgementToken) is not ProcessEventArgs args)
         {
@@ -368,6 +368,6 @@ public class EventHub : ITransport, IPurgeTransport, IDisposable
 
         LogMessage.MessageReleased(_logger, Uri.Uri.Scheme, Uri.TransportName);
 
-        await _hopperOptions.MessageReleased.InvokeAsync(new(this, acknowledgementToken), cancellationToken);
+        await _hopperOptions.MessageReleased.InvokeAsync(new(this, acknowledgementToken, pipeline), cancellationToken);
     }
 }
